@@ -1,5 +1,6 @@
 import { Column, CreateDateColumn, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm'
 import { SailingTrip } from './SailingTrip'
+import { Boat } from './Boat'
 
 @Entity('users')
 export class User {
@@ -20,4 +21,7 @@ export class User {
 
   @OneToMany(() => SailingTrip, (trip) => trip.createdBy)
   trips!: SailingTrip[]
+
+  @OneToMany(() => Boat, (boat) => boat.createdBy)
+  boats!: Boat[]
 }
