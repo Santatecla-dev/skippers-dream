@@ -1,0 +1,16 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: skippers-dream-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: skippers_dream
+      POSTGRES_USER: skipper
+      POSTGRES_PASSWORD: skipper_dev_password
+    ports:
+      - "5432:5432"
+    volumes:
+      - skippers_dream_pgdata:/var/lib/postgresql/data
+
+volumes:
+  skippers_dream_pgdata:
