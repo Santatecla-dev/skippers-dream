@@ -86,7 +86,7 @@ app.delete('/api/boats/:id', requireAuth, async (req: AuthRequest, res) => {
 })
 
 async function listTrips(userId: string, onlyPlanned = false) {
-  const query = dataSource.getRepository(SailingTrip).createQueryBuilder('trip').leftJoinAndSelect('trip.boat', 'boat').leftJoinAndSelect('trip.createdBy', 'createdBy').where('(trip.createdById = :userId OR trip.createdById IS NULL)', { userId })
+  const query = dataSource.getRepository(SailingTrip).createQueryBuilder('trip').leftJoinAndSelect('trip.boat', 'boat').leftJoinAndSelect('trip.createdBy', 'createdBy').where('trip.createdById = :userId', { userId })
   if (onlyPlanned) query.andWhere('trip.status = :status', { status: 'planned' })
   return query.orderBy('trip.departureAt', 'ASC').getMany()
 }
@@ -121,17 +121,9 @@ app.patch('/api/trips/:id', requireAuth, async (req: AuthRequest, res) => {
   return res.json(publicTrip(trip))
 })
 
-async function seedTrips() {
-  const repo = dataSource.getRepository(SailingTrip)
-  if (await repo.count()) return
-  const base = new Date()
-  const at = (days: number, hour: number) => { const value = new Date(base); value.setDate(value.getDate() + days); value.setHours(hour, 0, 0, 0); return value }
-  await repo.save([
-    repo.create({ title: 'Salida de práctica', boatName: 'Mar Azul', departurePort: 'Club Náutico de Valencia', departureAt: at(3, 9), destination: 'El Saler', notes: 'Práctica de maniobras y navegación costera', status: 'planned' }),
-    repo.create({ title: 'Travesía de fin de semana', boatName: 'Brisa II', departurePort: 'Puerto de Dénia', departureAt: at(10, 8), destination: 'Formentera', notes: 'Plazas disponibles para tripulación', status: 'planned' }),
-    repo.create({ title: 'Navegación al atardecer', boatName: 'Amanecer', departurePort: 'Puerto de Barcelona', departureAt: at(17, 18), destination: 'Sitges', notes: 'Salida tranquila para ganar horas de mar', status: 'planned' }),
-  ])
+async function removeDefaultTrips() {
+  await dataSource.getRepository(SailingTrip).createQueryBuilder().delete().from(SailingTrip).where('"createdById" IS NULL').execute()
 }
 
 const port = Number(process.env.PORT || 3001)
-dataSource.initialize().then(async () => { await seedTrips(); app.listen(port, () => console.log(`Skipper's Dream API listening on http://localhost:${port}`)) }).catch((error) => { console.error(error); process.exit(1) })
+dataSource.initialize().then(async () => { await removeDefaultTrips(); app.listen(port, () => console.log(`Skipper's Dream API listening on http://localhost:${port}`)) }).catch((error) => { console.error(error); process.exit(1) })
