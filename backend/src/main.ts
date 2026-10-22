@@ -21,7 +21,7 @@ const dataSource = new DataSource({
 })
 
 const app = express()
-app.use(cors({ origin: ['http://localhost:5173'], credentials: false }))
+app.use(cors({ origin: ['http://localhost:5173', 'http://localhost:5174'], credentials: false }))
 app.use(express.json())
 
 const clean = (value: unknown) => typeof value === 'string' ? value.trim() : ''
